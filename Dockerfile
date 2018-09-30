@@ -1,6 +1,8 @@
-FROM java:8
-EXPOSE 8080
+FROM openjdk:8-jdk-alpine
 VOLUME /tmp
-COPY target/subscribers-manager-0.0.1-SNAPSHOT.one-jar.jar /opt/app.jar
-WORKDIR /opt
-CMD java -jar app.jar
+RUN mkdir /work
+COPY . /work
+WORKDIR /work
+RUN /work/mvnw install -DskipTests
+RUN mv /work/target/*.jar /work/app.jar
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/work/app.jar"]
