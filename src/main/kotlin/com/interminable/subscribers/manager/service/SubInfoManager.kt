@@ -18,6 +18,9 @@ import org.springframework.stereotype.Service
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 
+/**
+ * Класс являющийся бизнес-слоем приложения
+ */
 @Service
 class SubInfoManager(
         private val persistenceInteractor: PersistenceInteractor
@@ -28,29 +31,26 @@ class SubInfoManager(
         val DATE_FORMAT_REGEX = """\d{4}[-]\d{2}[-]\d{2}\s\d{2}[:]\d{2}[:]\d{2}""".toRegex()
     }
 
+    /**
+     * Добавляет новую запись, содержащую связь номера базовой станции (Cell Id) и номера абонента (CTN)
+     */
     override fun addCellIdToCtnBind(
             ctn: Long,
             cellId: Long
     ): OperationResult {
         val result = OperationResult()
-        if (ctn < 1) {
-            result.status = OperationStatus.ERROR
-            result.errors.add(NEGATIVE_CTN)
-        }
-        if (cellId < 1) {
-            result.status = OperationStatus.ERROR
-            result.errors.add(NEGATIVE_CELL_ID)
-        }
+        if (ctn < 1) result.addError(NEGATIVE_CTN)
+        if (cellId < 1) result.addError(NEGATIVE_CELL_ID)
         if (result.status != OperationStatus.ERROR) {
             val answer = persistenceInteractor.addCellIdToCtnBind(ctn, cellId)
-            if (!answer) {
-                result.status = OperationStatus.ERROR
-                result.errors.add(QUERY_EXECUTION_FAILED)
-            }
+            if (!answer) result.addError(QUERY_EXECUTION_FAILED)
         }
         return result
     }
 
+    /**
+     * Добавляет новую запись, содержащую профиль абонента (SubInfo)
+     */
     override fun addSubInfo(
             ctn: Long,
             name: String,
@@ -58,83 +58,57 @@ class SubInfoManager(
             activateDate: String
     ): OperationResult {
         val result = OperationResult()
-        if (ctn < 1) {
-            result.status = OperationStatus.ERROR
-            result.errors.add(NEGATIVE_CTN)
-        }
-        if (name.isBlank()) {
-            result.status = OperationStatus.ERROR
-            result.errors.add(EMPTY_NAME)
-        }
-        if (email.isBlank()) {
-            result.status = OperationStatus.ERROR
-            result.errors.add(EMPTY_EMAIL)
-        }
-        if (activateDate.isBlank()) {
-            result.status = OperationStatus.ERROR
-            result.errors.add(EMPTY_ACTIVATE_DATE)
-        }
-        if (!activateDate.matches(DATE_FORMAT_REGEX)) {
-            result.status = OperationStatus.ERROR
-            result.errors.add(WRONG_FORMATED_TIMESTAMP)
-        }
-        if (!EmailValidator.getInstance().isValid(email)) {
-            result.status = OperationStatus.ERROR
-            result.errors.add(INVALID_EMAIL)
-        }
+        if (ctn < 1) result.addError(NEGATIVE_CTN)
+        if (name.isBlank()) result.addError(EMPTY_NAME)
+        if (email.isBlank()) result.addError(EMPTY_EMAIL)
+        if (activateDate.isBlank()) result.addError(EMPTY_ACTIVATE_DATE)
+        if (!activateDate.matches(DATE_FORMAT_REGEX)) result.addError(WRONG_FORMATED_TIMESTAMP)
+        if (!EmailValidator.getInstance().isValid(email)) result.addError(INVALID_EMAIL)
         if (result.status != OperationStatus.ERROR) {
             val answer = persistenceInteractor.addSubInfo(ctn, name, email, Timestamp(DATE_FORMAT.parse(activateDate).time))
-            if (!answer) {
-                result.status = OperationStatus.ERROR
-                result.errors.add(QUERY_EXECUTION_FAILED)
-            }
+            if (!answer) result.addError(QUERY_EXECUTION_FAILED)
         }
         return result
     }
 
-    override fun getAllCellIdEntries(): Pair<OperationResult, MutableList<CellIdEntry>> {
-        val queryResult = persistenceInteractor.getAllCellIdEntries()
-        return if (queryResult == null) Pair(
-                OperationResult(
-                        OperationStatus.ERROR,
-                        mutableListOf(QUERY_EXECUTION_FAILED)
-                ),
-                mutableListOf()
-        )
-        else Pair(
-                OperationResult(),
-                queryResult
-        )
-    }
+    /**
+     * Возвращает все записи из таблицы, хранящей связи номеров базовой станции (Cell Id) и номеров абонента (CTN)
+     */
+    override fun getAllCellIdEntries() = persistenceInteractor.getAllCellIdEntries().queryResponse()
 
-    override fun getAllSubInfo(): Pair<OperationResult, MutableList<SubInfoEntry>> {
-        val queryResult = persistenceInteractor.getAllSubInfo()
-        return if (queryResult == null) Pair(
-                OperationResult(
-                        OperationStatus.ERROR,
-                        mutableListOf(QUERY_EXECUTION_FAILED)
-                ),
-                mutableListOf()
-        )
-        else Pair(
-                OperationResult(),
-                queryResult
-        )
-    }
+    /**
+     * Возвращает все записи из таблицы, хранящей профили абонентов (SubInfo)
+     */
+    override fun getAllSubInfo()= persistenceInteractor.getAllSubInfo().queryResponse()
 
-    override fun getSubInfoByCellId(cellId: Long): Pair<OperationResult, MutableList<SubInfoEntry>> {
-        val queryResult = persistenceInteractor.getSubInfoByCellId(cellId)
-        return if (queryResult == null) Pair(
-                OperationResult(
-                        OperationStatus.ERROR,
-                        mutableListOf(QUERY_EXECUTION_FAILED)
-                ),
-                mutableListOf()
-        )
-        else Pair(
-                OperationResult(),
-                queryResult
-        )
-    }
+    /**
+     * Возвращает список профилей (SubInfo) по номеру базовой станции (CellId)
+     */
+    override fun getSubInfoByCellId(cellId: Long) = persistenceInteractor.getSubInfoByCellId(cellId).queryResponse()
 
+    /**
+     * Возвращает пару статус/результат выполненного запроса.
+     *
+     * При this == null возвращает стутус ERROR
+     */
+    private fun <T> MutableList<T>?.queryResponse(): Pair<OperationResult, MutableList<T>> =
+            if (this == null) Pair(
+                    OperationResult(
+                            OperationStatus.ERROR,
+                            mutableListOf(QUERY_EXECUTION_FAILED)
+                    ),
+                    mutableListOf()
+            )
+            else Pair(
+                    OperationResult(),
+                    this
+            )
+
+    /**
+     * Меняет статус выполнения операции на ERROR и добавляет сообщение об ошибке
+     */
+    private fun OperationResult.addError(error: String) {
+        this.status = OperationStatus.ERROR
+        this.errors.add(error)
+    }
 }
