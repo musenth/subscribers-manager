@@ -131,6 +131,30 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>com.jolira</groupId>
+                <artifactId>onejar-maven-plugin</artifactId>
+                <version>1.4.4</version>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <binlibs>
+                                <fileSet>
+                                    <directory>${project.build.directory}/../lib/</directory>
+                                    <includes>
+                                        <include>kotlin-runtime.jar</include>
+                                    </includes>
+                                </fileSet>
+                            </binlibs>
+                            <attachToBuild>true</attachToBuild>
+                            <classifier>onejar</classifier>
+                        </configuration>
+                        <goals>
+                            <goal>one-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

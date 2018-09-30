@@ -1,0 +1,12 @@
+version: '3'
+services:
+  subscribers-manager:
+    build: .
+    image: subscribers-manager
+    ports:
+      - 8080:8080
+    environment:
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=ERROR
+      - LOGGING_LEVEL_COM_INTERMINABLE=DEBUG
+      - SUB_MANAGER_JDBC_CLASS_NAME=org.apache.ignite.IgniteJdbcDriver
+      - SUB_MANAGER_JDBC_URL=jdbc:ignite:thin://127.0.0.1
