@@ -18,6 +18,7 @@
 cell_id_info
 
 |Название поля|Тип|
+| --- | --- |
 |ctn|Long|
 |cell_id|Long|
 
