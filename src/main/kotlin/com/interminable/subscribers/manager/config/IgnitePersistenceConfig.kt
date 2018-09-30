@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration
  * Класс с методами, конфигурирующими Apache Ignite
  */
 @Configuration
-class IgniteConfig {
+class IgnitePersistenceConfig {
 
     /**
      * Создает кастомную конфигурацию для Apache Ignite

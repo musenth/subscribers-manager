@@ -1,6 +1,6 @@
 package com.interminable.subscribers.manager.storage
 
-import com.interminable.subscribers.manager.data.IgnitePersistenceInteractor
+import com.interminable.subscribers.manager.data.JdbcPersistenceInteractor
 import org.apache.ignite.Ignite
 import org.apache.ignite.Ignition
 import org.apache.ignite.configuration.IgniteConfiguration
@@ -24,12 +24,11 @@ class IgnitePersistenceInitializer {
      */
     @Bean
     fun ignite(): Ignite {
-        val ignite = Ignition.start(igniteConfiguration) // TODO обработка исключения и лог
+        val ignite = Ignition.start(igniteConfiguration)
         ignite.cluster().active(true)
 
-        val igniteInteractor = IgnitePersistenceInteractor()
+        val igniteInteractor = JdbcPersistenceInteractor()
         igniteInteractor.createCellIdTable()
-        igniteInteractor.createCtnTable()
         igniteInteractor.createSubInfoTable()
 
         return ignite

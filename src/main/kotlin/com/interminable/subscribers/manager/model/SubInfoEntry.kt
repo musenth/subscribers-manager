@@ -1,13 +1,13 @@
 package com.interminable.subscribers.manager.model
 
-import java.sql.Date
+import java.sql.Timestamp
 
 /**
- * Структура с информацией по профилям абонентов
+ * Класс, хранящий информацию о профиле абонента
  */
 data class SubInfoEntry(
-        var ctn: String,
-        var name: String,
-        var email: String,
-        var activateDate: Date
+        val ctn: Long,
+        val name: String,
+        val email: String,
+        val activateDate: String
 )
