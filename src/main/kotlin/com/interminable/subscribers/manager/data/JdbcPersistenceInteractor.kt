@@ -12,7 +12,7 @@ import com.interminable.subscribers.manager.util.SqlPatterns.SUB_INFO_TABLE_CREA
 import com.interminable.subscribers.manager.util.SqlPatterns.SUB_INFO_TABLE_DROP_PATTERN
 import com.interminable.subscribers.manager.util.SqlPatterns.SUB_INFO_TABLE_INSERT_QUERY_PATTERN
 import com.interminable.subscribers.manager.util.SqlPatterns.SUB_INFO_TABLE_SELECT_QUERY
-import org.apache.log4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Component
 import java.sql.*
@@ -33,7 +33,7 @@ class JdbcPersistenceInteractor(
     }
 
     companion object {
-        private val LOGGER = Logger.getLogger(JdbcPersistenceInteractor::class.java)
+        private val LOGGER = LoggerFactory.getLogger(JdbcPersistenceInteractor::class.java)
     }
 
     /* CREATE TABLE */
